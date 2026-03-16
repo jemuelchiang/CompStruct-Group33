@@ -9,6 +9,7 @@ module alu (
 ) {
 
     adder adder(#SIZE(32))
+    multiplier multiplier
     boolean boolean
     shifter shifter
     compare compare
@@ -22,6 +23,10 @@ module alu (
         z = adder.z
         v = adder.v
         n = adder.n
+
+        // multiplier
+        multiplier.a = a
+        multiplier.b = b
 
         //boolean
         boolean.a = a
@@ -42,6 +47,8 @@ module alu (
         case(alufn){
             b000000: out = adder.s
             b000001: out = adder.s
+
+            b000010: out = multiplier.mul
 
             b011000: out = boolean.bool
             b011110: out = boolean.bool
