@@ -13,6 +13,7 @@ module alu (
     boolean boolean
     shifter shifter
     compare compare
+    random random(#SIZE(32))
     
     always {
         // adder
@@ -43,12 +44,18 @@ module alu (
         compare.v = adder.v
         compare.n = adder.n
         compare.alufn = alufn
+
+        //random
+        random.a = a
+        random.b = b
         
         case(alufn){
             b000000: out = adder.s
             b000001: out = adder.s
 
             b000010: out = multiplier.mul
+
+            b010000: out = random.out
 
             b011000: out = boolean.bool
             b011110: out = boolean.bool
