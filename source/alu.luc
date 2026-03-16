@@ -9,6 +9,7 @@ module alu (
 ) {
 
     adder adder(#SIZE(32))
+    compare compare
     
     always {
         // adder
@@ -19,10 +20,20 @@ module alu (
         z = adder.z
         v = adder.v
         n = adder.n
+
+        //compare
+        compare.z = adder.z
+        compare.v = adder.v
+        compare.n = adder.n
+        compare.alufn = alufn
         
         case(alufn){
             b000000: out = adder.s
             b000001: out = adder.s
+
+            b110011: out = compare.cmp
+            b110101: out = compare.cmp
+            b110111: out = compare.cmp
                 
             default: out = 0
         }
