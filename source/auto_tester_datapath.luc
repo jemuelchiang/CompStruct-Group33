@@ -1,0 +1,64 @@
+module auto_tester_datapath (
+    input clk,  // clock
+    input rst,  // reset
+    input index_inc,
+    input index_load_zero,
+    input sample_enable,
+    input force_error,
+    output index[8], 
+    output last_index,
+    output equal,
+    output debug_rr_s[35],
+    output debug_test_s[35]
+) {
+    
+    const NUM_TEST_CASES = 16
+    dff test_index[$clog2(NUM_TEST_CASES)](.clk(clk), .rst(rst), #INIT(0))
+    test_values test_values(.index(test_index.q))
+    alu alu(.a(test_values.a), .b(test_values.b), .alufn(test_values.alufn))
+    reg_en test_pipeline_1(.clk(clk), .rst(rst), #SIZE(35), .en(sample_enable))
+    reg_en test_pipeline_2(.clk(clk), .rst(rst), #SIZE(35), .en(sample_enable))
+    
+    sig effective_s[35]
+    
+    always {
+        test_index.d = test_index.q
+        index = test_index.q
+        last_index = 0
+        equal = 0
+        
+        
+        // index and index reset connections
+        if (index_inc){
+            test_index.d = test_index.q + 1
+        }
+        
+        if (index_load_zero){
+            test_index.d = 0
+        }
+        
+        // pipeline connection
+        test_pipeline_1.d = c{test_values.s, test_values.z, test_values.v, test_values.n}
+        test_pipeline_2.d = test_pipeline_1.q
+        
+        
+        // force error
+        if (force_error){
+            effective_s = ~c{alu.out, alu.z, alu.v, alu.n}
+        } else {
+        effective_s = c{alu.out, alu.z, alu.v, alu.n}
+        }
+        
+        
+        // comparator 
+        equal = &(effective_s ^~ test_pipeline_2.q)
+        
+        // last index checker
+        last_index = &(test_index.q)
+        
+        // debug signals 
+        debug_rr_s = effective_s
+        debug_test_s = test_pipeline_2.q
+        
+    }
+}
