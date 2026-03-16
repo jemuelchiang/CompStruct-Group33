@@ -4,8 +4,32 @@ module multiplier (
     output mul[32]
 ) {
     
+    left_shifter left_shifter[32]
+    #SIZE(32){
+        rca rca[31]
+    }
+    
+    sig partial[32][32]
+    
     always {
-        // implement multiplier unit logic here
-        mul = 0 
+        repeat(i, 32, 0, 1){
+            left_shifter.a[i] = a
+            left_shifter.b[i] = 5x{i}
+            left_shifter.pad[i] = b0
+            partial[i] = b[i] ? left_shifter.shl[i] : 32b0
+        }
+        
+        rca.a[0] = partial[0]
+        rca.b[0] = partial[1]
+        rca.cin[0] = b0
+        
+        repeat(i,30,0,1){
+            rca.a[i+1] = rca.s[i]
+            rca.b[i+1] = partial[i+2]
+            rca.cin[i+1] = b0
+        }
+        
+        mul = rca.s[30]
+        
     }
 }
