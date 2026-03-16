@@ -1,0 +1,69 @@
+module tester_auto_alu#(
+    CLK_FREQ ~ 1000 : CLK_FREQ > 0) 
+(
+    input clk,  // clock
+    input rst,  // reset
+    input io_button[5],
+    input io_dip[3][8],
+    output io_led[3][8],
+    output io_segment[8],
+    output io_select[4],
+    output led[8]
+) {
+
+    
+    button_conditioner start_button(.clk(clk), #CLK_FREQ(CLK_FREQ), .in(io_button[0]))
+    counter slow_clock(#DIV($is_sim()? 9 : 28), .clk(clk), .rst(rst), #SIZE(1))
+    
+    auto_tester_fsm tester(.clk(clk), .slowclk(slow_clock.value), .rst(rst), .start_press(start_button.out))
+    auto_tester_datapath datapath(.clk(clk), .rst(rst))
+
+    
+    
+    always {
+        io_led = 3x{{8h00}}
+        io_segment = 8hff
+        io_select = 4hf
+        
+        
+        io_led[0] = datapath.index
+        io_led[1] = datapath.debug_rr_s[10:3]
+        io_led[2] = datapath.debug_test_s[10:3]
+        
+        if(io_button[3]){
+            io_led[1] = datapath.debug_rr_s[18:11]
+            io_led[2] = datapath.debug_test_s[18:11]
+        }
+        if(io_button[1]){
+            io_led[1] = datapath.debug_rr_s[26:19]
+            io_led[2] = datapath.debug_test_s[26:19]
+        }
+        if(io_button[4]){
+            io_led[1] = datapath.debug_rr_s[34:27]
+            io_led[2] = datapath.debug_test_s[34:27]
+        }
+
+        
+        led[5:0] = tester.state_debug
+        led[6] = tester.running
+        led[7] = tester.error
+        
+        
+        datapath.force_error = io_dip[2][7]
+        
+        tester.equal = datapath.equal
+        tester.last_index = datapath.last_index
+        datapath.index_inc = tester.index_inc
+        datapath.index_load_zero = tester.index_load_zero
+        datapath.sample_enable = tester.sample_enable
+
+        
+
+        
+        
+        // unused
+        io_segment = 0
+        io_select = 0
+        
+    }
+}
