@@ -10,6 +10,7 @@ module alu (
 
     adder adder(#SIZE(32))
     boolean boolean
+    shifter shifter
     compare compare
     
     always {
@@ -27,6 +28,11 @@ module alu (
         boolean.b = b
         boolean.alufn = alufn
 
+        //shifter
+        shifter.a = a
+        shifter.b = b
+        shifter.alufn = alufn
+
         //compare
         compare.z = adder.z
         compare.v = adder.v
@@ -41,6 +47,10 @@ module alu (
             b011110: out = boolean.bool
             b010110: out = boolean.bool
             b011010: out = boolean.bool
+
+            b100000: out = shifter.shift
+            b100001: out = shifter.shift
+            b100011: out = shifter.shift
 
             b110011: out = compare.cmp
             b110101: out = compare.cmp
