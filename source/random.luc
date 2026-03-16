@@ -1,0 +1,15 @@
+module random #(
+    SIZE ~ 32 : SIZE > 1
+)(
+    input a[SIZE],
+    input b[SIZE],
+    output out[SIZE]
+) {
+    
+    sig t[32]
+    
+    always {
+        t = a ^ (a << 11)
+        out = b ^ (b >> 19) ^ t ^ (t >> 8)
+    }
+}
