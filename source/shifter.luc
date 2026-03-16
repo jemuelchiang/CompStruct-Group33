@@ -4,10 +4,29 @@ module shifter (
     input alufn[6],
     output shift[32]
 ) {
+    left_shifter left_shifter
+    right_shifter right_shifter
+    right_signed_shifter right_signed_shifter
 
     always {
-        // implement shifter unit logic here
-        shift = 0
+        left_shifter.a = a
+        left_shifter.b = b
+        left_shifter.pad = b0
+        
+        right_shifter.a = a
+        right_shifter.b = b
+        right_shifter.pad = b0
+        
+        right_signed_shifter.a = a
+        right_signed_shifter.b = b
+        right_signed_shifter.pad = a[31]
+        
+        case(alufn[1:0]){
+            b00: shift = left_shifter.shl
+            b01: shift = right_shifter.shl
+            b11: shift = right_signed_shifter.shl
+            default: shift = 0
+        }
         
     } 
 }
