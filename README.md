@@ -1,1 +1,0 @@
-# CompStruct-1D
