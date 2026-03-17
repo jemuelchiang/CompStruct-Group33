@@ -12,7 +12,7 @@ module auto_tester_datapath (
     output debug_test_s[35]
 ) {
     
-    const NUM_TEST_CASES = 16
+    const NUM_TEST_CASES = 32
     dff test_index[$clog2(NUM_TEST_CASES)](.clk(clk), .rst(rst), #INIT(0))
     test_values test_values(.index(test_index.q))
     alu alu(.a(test_values.a), .b(test_values.b), .alufn(test_values.alufn))
