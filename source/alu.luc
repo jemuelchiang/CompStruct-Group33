@@ -1,0 +1,48 @@
+module alu (
+    input a[32],
+    input b[32],
+    input ctr_in[32],
+    input alufn[6],
+    output out[32],
+    output z,
+    output v,
+    output n
+) {
+    adder adder(#SIZE(32))
+    random random
+    compare compare
+    
+    always {
+        // adder
+        adder.a = a
+        adder.b = b
+        adder.alufn = alufn
+        
+        z = adder.z
+        v = adder.v
+        n = adder.n
+        
+        // random
+        random.ctr_in = ctr_in
+        
+        //compare
+        compare.z = adder.z
+        compare.v = adder.v
+        compare.n = adder.n
+        compare.alufn = alufn
+        
+        case(alufn){
+            b000000: out = adder.s
+            b000001: out = adder.s
+                
+            b010000: out = random.out
+                
+            b110011: out = compare.cmp
+            b110101: out = compare.cmp
+                
+            default: out = 0
+        }
+        
+        
+    }
+}

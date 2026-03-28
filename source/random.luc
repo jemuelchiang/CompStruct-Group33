@@ -1,0 +1,32 @@
+module random (
+    input ctr_in[32],
+    output out[32]
+) {
+    
+    left_shifter left_shifter
+    right_shifter right_shifter1
+    right_shifter right_shifter2
+    
+    sig t[32]
+    
+    always {
+        
+        left_shifter.a = ctr_in
+        left_shifter.b = 5b01011
+        left_shifter.pad = 1b0
+        
+        // t = counter ^ (counter << 11)
+        t = ctr_in ^ left_shifter.shl
+        
+        right_shifter1.a = ctr_in
+        right_shifter1.b = 5b10011
+        right_shifter1.pad = 1b0
+        
+        right_shifter2.a = t
+        right_shifter2.b = 5b01000
+        right_shifter2.pad = 1b0
+        
+        // out = counter ^ (counter >> 19) ^ t ^ (t >> 8)
+        out = ctr_in ^ right_shifter1.shr ^ t ^ right_shifter2.shr
+    }
+}
