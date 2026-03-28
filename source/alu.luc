@@ -1,7 +1,7 @@
 module alu (
     input a[32],
     input b[32],
-    input ctr_in[32],
+    input ctr_in[32],  //modify to align to datapath
     input alufn[6],
     output out[32],
     output z,
