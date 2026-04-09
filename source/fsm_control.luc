@@ -1,0 +1,288 @@
+module fsm_control (
+    input clk,
+    input rst,
+    input start_press,
+    
+    // led
+    input user_input[4],
+    input busy,
+    output trigger,
+    output from_mem,
+    
+    // Control Outputs to Regfile
+    output we,              // Regfile write enable
+    output wa[5],           // Regfile write address
+    output ra1[5],          // Regfile read port 1
+    output ra2[5],          // Regfile read port 2
+    
+    // Control Outputs to ALU/RAM/Mux
+    output alufn[6],       // ALU Opcode
+    output mem_we,          // MEM Write Enable
+    output memsel,          // 
+    output asel[2],
+    output bsel[2],
+    output datasel[2],      // 0: ALU, 1: Entropy Counter, 2: Button Input
+    
+    // Signal from datapath
+    input alu_cmp_result,
+    
+    // Game end signals
+    output game_win,
+    output game_over,
+    
+    // Debug
+    output state_debug[8]
+    
+) {
+    enum States{
+        IDLE,
+        STORE_CTR,
+        GEN_AND_SAVE,
+        INCR_SEQ_LENGTH,
+        PLAYBACK_PREP,
+        PLAYBACK,
+        PLAYBACK_WAIT,
+        INCR_PLAYBACK,
+        PLAYBACK_CHECK,
+        INPUT_PREP,
+        USER_INPUT,
+        BUSY_CHECK,
+        INPUT_CHECK,
+        INCR_CURRENT,
+        ROUND_CHECK,
+        INCR_SCORE,
+        SCORE_CHECK,
+        WIN,
+        GAME_OVER
+      }
+    
+    dff states[$width(States)](.clk(clk), .rst(rst), #INIT(States.IDLE))
+
+    
+    always {
+        // Default Control Signal Outputs
+        we = 0
+        wa = 0
+        ra1 = 0
+        ra2 = 0
+        alufn = 0
+        mem_we = 0
+        memsel = 0
+        asel = 0
+        bsel = 0
+        datasel = 0
+        
+        trigger = 0
+        from_mem = 0
+        
+        game_win = 0
+        game_over = 0
+        
+        state_debug = 0
+        
+        states.d = states.q
+        
+        case (states.q) {
+            States.IDLE: // Wait for start button to be pressed
+                state_debug = 8h01
+                
+                if(start_press){
+                states.d = States.STORE_CTR
+                }
+                
+            States.STORE_CTR: // Store entropy counter's value into R3
+                state_debug = 8h02
+                
+                we = 1
+                datasel = 1
+                wa = d3
+                states.d = States.GEN_AND_SAVE
+                
+            States.GEN_AND_SAVE: // ALU generate random number, save into memory
+                state_debug = 8h03
+                
+                ra1 = d3
+                asel = b00
+                alufn = b000010
+                memsel = 0
+                mem_we = 1
+                states.d = States.INCR_SEQ_LENGTH
+            
+            States.INCR_SEQ_LENGTH: // increment sequence length (R0) by 1
+                state_debug = 8h04
+                
+                ra1 = d0
+                asel = b00
+                bsel = b10
+                alufn = b000000
+                datasel = b0
+                we = 1
+                wa = d0
+                states.d = States.PLAYBACK_PREP
+                
+            States.PLAYBACK_PREP: // Set helper index (R1) to 0
+                state_debug = 8h05
+                
+                asel = b10
+                wa = d1
+                alufn = b011010
+                datasel = b0
+                we = 1
+                states.d = States.PLAYBACK
+                
+            States.PLAYBACK: // Light up 1 led from sequence memory
+                state_debug = 8h06
+                
+                trigger = 1
+                from_mem = 1
+                memsel = 1
+                states.d = States.PLAYBACK_WAIT
+
+            States.PLAYBACK_WAIT: // Wait for light to turn off
+                state_debug = 8h07
+                
+                from_mem = 1
+                memsel = 1
+                if (!busy) {
+                    states.d = States.INCR_PLAYBACK
+                }
+                
+            States.INCR_PLAYBACK: // Increment helper index by 1
+                state_debug = 8h08
+                
+                ra1 = d1
+                asel = b00
+                bsel = b10
+                alufn = b000000
+                datasel = b0
+                we = 1
+                wa = d1
+                states.d = States.PLAYBACK_CHECK
+                
+            States.PLAYBACK_CHECK: // Check if helper index = sequence length
+                state_debug = 8h09
+                
+                ra1 = d1
+                asel = b00
+                ra2 = d0
+                bsel = b00
+                alufn = b110011
+                
+                if (alu_cmp_result) {
+                    states.d = States.INPUT_PREP
+                } else {
+                    states.d = States.PLAYBACK
+                }
+                
+            States.INPUT_PREP: // Set helper index (R1) to 0
+                state_debug = 8h0A
+                
+                asel = b10
+                wa = d1
+                alufn = b011010
+                datasel = b0
+                we = 1
+                states.d = States.USER_INPUT
+                
+            States.USER_INPUT: // Listen for button press, light up that led and store input
+                state_debug = 8h0B
+                
+                if (user_input != 0) {
+                    trigger = 1            // light up led
+                    from_mem = 0
+                    
+                    asel = b01             // store user_input for comparison
+                    wa = d2
+                    alufn = b011010
+                    datasel = b0
+                    we = 1
+                    
+                    states.d = States.BUSY_CHECK
+                }
+                
+            States.BUSY_CHECK: // Wait for light to turn off
+                state_debug = 8h0C
+                
+                if (!busy) {
+                    states.d = States.INPUT_CHECK
+                }
+                
+            States.INPUT_CHECK: // Check if user input == memory value
+                state_debug = 8h0D
+                
+                ra1 = d2
+                asel = b00
+                memsel = b1
+                bsel = b01
+                alufn = b110011
+                if (alu_cmp_result) {
+                    states.d = States.INCR_CURRENT
+                } else {
+                    states.d = States.GAME_OVER
+                }
+                
+            States.INCR_CURRENT: // Increment helper index by 1
+                state_debug = 8h0E
+                
+                ra1 = d1
+                asel = b00
+                bsel = b10
+                alufn = b000000
+                datasel = b0
+                we = 1
+                wa = d1
+                states.d = States.ROUND_CHECK
+                
+            States.ROUND_CHECK: // Check if helper index = sequence length
+                state_debug = 8h0F
+                
+                ra1 = d1
+                asel = b00
+                ra2 = d0
+                bsel = b00
+                alufn = b110011
+                
+                if (alu_cmp_result) {
+                    states.d = States.INCR_SCORE
+                } else {
+                    states.d = States.USER_INPUT
+                }
+                
+            States.INCR_SCORE: // Increment player score
+                state_debug = 8h10
+                
+                ra1 = d4
+                asel = b00
+                bsel = b10
+                alufn = b000000
+                datasel = b0
+                we = 1
+                wa = d4
+                states.d = States.SCORE_CHECK
+                
+            States.SCORE_CHECK: // Check if score == max score
+                state_debug = 8h11
+                
+                ra1 = d4
+                asel = b00
+                bsel = b11
+                alufn = b110011
+                
+                if (alu_cmp_result) {
+                    states.d = States.WIN
+                } else {
+                    states.d = States.STORE_CTR
+                }
+                
+            States.WIN:
+                state_debug = 8h12
+                
+                game_win = 1
+                
+            States.GAME_OVER:
+                state_debug = 8h13
+                
+                game_over = 1
+        }
+    }
+}

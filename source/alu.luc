@@ -1,7 +1,6 @@
 module alu (
     input a[32],
     input b[32],
-    input ctr_in[32],  //modify to align to datapath
     input alufn[6],
     output out[32],
     output z,
@@ -23,23 +22,16 @@ module alu (
         n = adder.n
         
         // random
-        random.ctr_in = ctr_in
+        random.ctr_in = a
         
         //compare
         compare.z = adder.z
-        compare.v = adder.v
-        compare.n = adder.n
-        compare.alufn = alufn
         
         case(alufn){
-            b000000: out = adder.s
-            b000001: out = adder.s
-                
-            b010000: out = random.out
-                
-            b110011: out = compare.cmp
-            b110101: out = compare.cmp
-                
+            b000000: out = adder.s        // ADD
+            b000010: out = random.out     // Generate random number
+            b011010: out = a              // 'A'
+            b110011: out = compare.cmp    // CMP_EQ
             default: out = 0
         }
         

@@ -1,0 +1,26 @@
+module sequence_memory (
+    input clk,          // clock
+    input rst,          // reset
+    input we,           // write enable
+    input addr[5],      // address: 0–19 (needs 5 bits)
+    input data_in[4],   // 4-bit value to write
+    output data_out[4]  // 4-bit value at current address
+) {
+
+    .clk(clk), .rst(rst) {
+        dff mem[32][4] // 32 registers (using 20), each 4 bits wide
+    }
+
+    always {
+        // Output the value at the requested address
+        data_out = mem.q[addr]
+
+        // Registers hold their value
+        mem.d = mem.q
+
+        // Only update the addressed register when we is high
+        if (we) {
+            mem.d[addr] = data_in
+        }
+    }
+}

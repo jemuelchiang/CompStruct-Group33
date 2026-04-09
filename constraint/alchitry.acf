@@ -1,0 +1,37 @@
+STANDARD(LVCMOS33), SIDE(TOP) {
+    pin clk CLOCK FREQUENCY(50MHz)
+
+    pin rst_n RESET
+
+    pin led[0] LED0
+    pin led[1] LED1
+    pin led[2] LED2
+    pin led[3] LED3
+    pin led[4] LED4
+    pin led[5] LED5
+    pin led[6] LED6
+    pin led[7] LED7
+
+    pin usb_rx USB_RX
+    pin usb_tx USB_TX
+    
+    /*pin arcade_btn1 A27 PULL(DOWN)
+    pin arcade_btn2 A30 PULL(DOWN)
+    pin arcade_btn3 A33 PULL(DOWN)
+    pin arcade_btn4 A36 PULL(DOWN)
+    pin arcade_btn5 B36 PULL(DOWN)
+    pin arcade_btn6 B39 PULL(DOWN)
+    pin arcade_btn7 B42 PULL(DOWN)
+    pin arcade_btn8 B45 PULL(DOWN)
+    pin arcade_btn9 B48 PULL(DOWN)
+    
+    pin transistor1 A39
+    pin transistor2 A42
+    pin transistor3 A45
+    pin transistor4 A48
+    pin transistor5 B28
+    pin transistor6 B31
+    pin transistor7 B34
+    pin transistor8 B37
+    pin transistor9 B40*/
+}

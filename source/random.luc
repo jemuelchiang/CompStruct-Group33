@@ -8,6 +8,7 @@ module random (
     right_shifter right_shifter2
     
     sig t[32]
+    sig result[32]
     
     always {
         
@@ -26,7 +27,29 @@ module random (
         right_shifter2.b = 5b01000
         right_shifter2.pad = 1b0
         
-        // out = counter ^ (counter >> 19) ^ t ^ (t >> 8)
-        out = ctr_in ^ right_shifter1.shr ^ t ^ right_shifter2.shr
+        // result = counter ^ (counter >> 19) ^ t ^ (t >> 8)
+        result = ctr_in ^ right_shifter1.shr ^ t ^ right_shifter2.shr
+        
+        case (result[3:0]) {
+            h0: out = h9
+                
+            h1: out = h1
+            h2: out = h2
+            h3: out = h3
+            h4: out = h4
+            h5: out = h5
+            h6: out = h6
+            h7: out = h7
+            h8: out = h8
+            h9: out = h9
+                
+            hA: out = h8
+            hB: out = h7
+            hC: out = h5
+            hD: out = h4
+            hE: out = h3
+            hF: out = h2
+            default: out = 1
+        }
     }
 }

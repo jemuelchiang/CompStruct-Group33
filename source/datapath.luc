@@ -1,0 +1,90 @@
+module datapath (
+    input clk,
+    input rst,
+
+    // Control Signals from FSM
+    input alufn[6],
+    input wa[5],            // Regfile write address
+    input we,               // Regfile write enable
+    input ra1[5],           // Regfile read address 1
+    input ra2[5],           // Regfile read address 2
+    input datasel[2],      // Selects source for Regfile data
+    input asel[2],          // Selects source for ALU A
+    input bsel[2],          // Selects source for ALU B
+    input memsel,
+    input mem_we,           // Write to sequence memory
+    
+    // Inputs from buttons
+    input user_input[4],  // Conditioned button inputs
+    
+    output mem_led_out[4],   // To alchitry top
+    output score[32],        // To alchitry top
+    
+    // Signals to FSM
+    output alu_cmp_result
+
+) {
+    
+    alu alu
+    regfile regfile(.clk(clk), .rst(rst))
+    sequence_memory seq_mem(.clk(clk), .rst(rst))
+  
+    .clk(clk), .rst(rst) {
+        dff entropy_counter[32] // Free-running counter for randomness
+    }
+
+    always {
+        // Entropy Counter
+        entropy_counter.d = entropy_counter.q + 1
+
+        // Regfile Data Input Mux (data_sel)
+        case (datasel) {
+            1b0: regfile.data = alu.out                // From ALU
+            1b1: regfile.data = entropy_counter.q      // From Entropy Counter
+            default: regfile.data = 32b0
+        }
+
+        // ALU Input A Mux (asel)
+        case (asel) {
+            2b00: alu.a = regfile.rd1                // From Regfile rd1
+            2b01: alu.a = user_input                 // Directly from buttons
+            2b10: alu.a = 1b0                        // Constant 0 to set reg values
+            default: alu.a = regfile.rd1
+        }
+
+        // ALU Input B Mux (bsel)
+        case (bsel) {
+            2b00: alu.b = regfile.rd2                 // From Regfile rd2
+            2b01: alu.b = seq_mem.data_out            // From memory
+            2b10: alu.b = 32d1                        // Constant 1 (for incrementing) (difficulty?)
+            2b11: alu.b = 32d20                       // Max score (20) (can change for testing purposes)
+            default: alu.b = regfile.rd2
+        }
+        
+        // Memory address mux
+        case (memsel) {
+            1b0: seq_mem.addr = regfile.seq_len[4:0]
+            1b1: seq_mem.addr = regfile.helper_index[4:0]
+            default: seq_mem.addr = 0
+        }
+
+        // Regfile
+        regfile.wa = wa
+        regfile.we = we
+        regfile.ra1 = ra1
+        regfile.ra2 = ra2
+
+        // ALU
+        alu.alufn = alufn
+        alu_cmp_result = alu.out[0]  // LSB for True/False from cmp equal
+        
+        // Sequence Memory
+        seq_mem.we = mem_we
+        seq_mem.data_in = alu.out[3:0] // Store the 4-bit random number generated
+        
+        // To alchitry top
+        mem_led_out = seq_mem.data_out // To light up LED from memory
+        score = regfile.score
+
+  }
+}

@@ -8,7 +8,29 @@ module alchitry_top (
     output io_segment[8],        // 7-segment LEDs on IO Shield
     output io_select[4],        // Digit select on IO Shield
     input io_button[5],      // 5 buttons on IO Shield
-    input io_dip[3][8]       // DIP switches on IO Shield
+    input io_dip[3][8]        // DIP switches on IO Shield
+    
+    /*// Arcade Buttons
+    input arcade_btn1, //A27
+    input arcade_btn2, //A30
+    input arcade_btn3, //A33
+    input arcade_btn4, //A36
+    input arcade_btn5, //B36
+    input arcade_btn6, //B39
+    input arcade_btn7, //B42
+    input arcade_btn8, //B45
+    input arcade_btn9,  //B48
+    
+    // Transistors
+    output transistor1,
+    output transistor2,
+    output transistor3,
+    output transistor4,
+    output transistor5,
+    output transistor6,
+    output transistor7,
+    output transistor8,
+    output transistor9*/
 ) {
     
     sig rst                 // reset signal
@@ -18,27 +40,135 @@ module alchitry_top (
         // clock. This ensures the entire FPGA comes out of reset at the same time.
         reset_conditioner reset_cond
     }
-    const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100000000 otherwise in hardware
     
-    // test ALU
-    alu_manual_tester alu_manual(.clk(clk), .rst(rst), .io_button(io_button), .io_dip(io_dip), #CLK_FREQ(CLK_FREQ)) 
-    //
+    const CLK_FREQ = $is_sim() ? 1000 : 50000000 // put 1000 for sim, 100000000 otherwise in hardware
+    
+    
+    
+    .clk(clk), #CLK_FREQ(CLK_FREQ) {
+        button_conditioner start_cond(.in(io_button[0]))
+        button_conditioner btn_cond_1(.in(io_dip[0][0]))//io_dip[0][0]
+        button_conditioner btn_cond_2(.in(io_dip[0][1]))//io_dip[0][1]
+        button_conditioner btn_cond_3(.in(io_dip[0][2]))//io_dip[0][2]
+        button_conditioner btn_cond_4(.in(io_dip[0][3]))//io_dip[0][3]
+        button_conditioner btn_cond_5(.in(io_dip[0][4]))//io_dip[0][4]
+        button_conditioner btn_cond_6(.in(io_dip[0][5]))//io_dip[0][5]
+        button_conditioner btn_cond_7(.in(io_dip[0][6]))//io_dip[0][6]
+        button_conditioner btn_cond_8(.in(io_dip[0][7]))//io_dip[0][7]
+        button_conditioner btn_cond_9(.in(io_dip[1][0]))//io_dip[1][0]
+    }
+    
+    .clk(clk), #RISE(1), #FALL(0) {
+        edge_detector start_edge(.in(start_cond.out))
+        edge_detector btn_edge_1(.in(btn_cond_1.out))
+        edge_detector btn_edge_2(.in(btn_cond_2.out))
+        edge_detector btn_edge_3(.in(btn_cond_3.out))
+        edge_detector btn_edge_4(.in(btn_cond_4.out))
+        edge_detector btn_edge_5(.in(btn_cond_5.out))
+        edge_detector btn_edge_6(.in(btn_cond_6.out))
+        edge_detector btn_edge_7(.in(btn_cond_7.out))
+        edge_detector btn_edge_8(.in(btn_cond_8.out))
+        edge_detector btn_edge_9(.in(btn_cond_9.out))
+    }
+    
+    sig user_input[4]
+    
+    .clk(clk), .rst(rst){
+        datapath datapath
+        led_controller led_controller(#CLK_FREQ(CLK_FREQ))
+        fsm_control fsm(.start_press(start_edge.out))
+        score_display score_display(#CLK_FREQ(CLK_FREQ), .score(datapath.score[4:0]))
+    }
     
     always {
+        
         reset_cond.in = ~rst_n  // input raw inverted reset signal
         rst = reset_cond.out    // conditioned reset
         
-        led = 8h00             // turn LEDs off
+        led = fsm.state_debug // show fsm state
         
         usb_tx = usb_rx          // loop serial port
         
+        io_led = 3x{{8b0}}
+        io_segment = score_display.io_segment
+        io_select  = score_display.io_select
+        /*transistor1 = 0
+        transistor2 = 0
+        transistor3 = 0
+        transistor4 = 0
+        transistor5 = 0
+        transistor6 = 0
+        transistor7 = 0
+        transistor8 = 0
+        transistor9 = 0*/
+        
+        io_led[1][7:3] = datapath.score[4:0]
+    
+        user_input = 4b0000
+        if (btn_edge_1.out) user_input = 4b0001
+        if (btn_edge_2.out) user_input = 4b0010
+        if (btn_edge_3.out) user_input = 4b0011
+        if (btn_edge_4.out) user_input = 4b0100
+        if (btn_edge_5.out) user_input = 4b0101
+        if (btn_edge_6.out) user_input = 4b0110
+        if (btn_edge_7.out) user_input = 4b0111
+        if (btn_edge_8.out) user_input = 4b1000
+        if (btn_edge_9.out) user_input = 4b1001
         
         
-        // test ALU
-        io_segment = alu_manual.io_segment
-        io_select = alu_manual.io_select         
-        io_led = alu_manual.io_led
-        //
+        // datapath connections
+        datapath.alufn = fsm.alufn
+        datapath.wa = fsm.wa
+        datapath.we = fsm.we
+        datapath.ra1 = fsm.ra1
+        datapath.ra2 = fsm.ra2
+        datapath.datasel = fsm.datasel
+        datapath.asel = fsm.asel
+        datapath.bsel = fsm.bsel
+        datapath.memsel = fsm.memsel
+        datapath.mem_we = fsm.mem_we
+        
+        datapath.user_input = user_input
+        
+        // led_controller connections
+        led_controller.user_input = user_input;                    // default: buttons
+        if (fsm.from_mem) {                       // FSM signals which source to use
+            led_controller.user_input = datapath.mem_led_out;      // from memory
+        }
+        
+        led_controller.trigger = fsm.trigger
+        
+        
+        repeat(i,8,0,1){
+            io_led[0][i] = led_controller.leds[i]
+        }
+        io_led[1][0] = led_controller.leds[8]
+        
+        /*transistor1 = led_controller.leds[0]
+        transistor2 = led_controller.leds[1]
+        transistor3 = led_controller.leds[2]
+        transistor4 = led_controller.leds[3]
+        transistor5 = led_controller.leds[4]
+        transistor6 = led_controller.leds[5]
+        transistor7 = led_controller.leds[6]
+        transistor8 = led_controller.leds[7]
+        transistor9 = led_controller.leds[8]*/
+        
+        
+        // fsm_control connections
+        fsm.user_input = user_input
+        fsm.busy = led_controller.busy
+        fsm.alu_cmp_result = datapath.alu_cmp_result
+        
+        //WIN
+        if (fsm.game_win) {
+            io_led[2] = 8hFF
+        }
+        
+        // GAME OVER
+        if (fsm.game_over) {
+            io_led[2] = 8hAA
+        }
         
     }
 }

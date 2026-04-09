@@ -1,0 +1,29 @@
+module led_controller #(
+    CLK_FREQ = 100000000 : CLK_FREQ > 0
+)(
+    input clk,
+    input rst,
+    input user_input[4],   // 0–8 from alchitry_top
+    input trigger,         // pulsed by FSM when in the right state
+    output leds[9],        // one per button/LED
+    output busy            // any timer still running
+) {
+
+    .clk(clk), .rst(rst), #CLK_FREQ(CLK_FREQ){
+        led_timer timers[9]; // 9 timer instances
+    }
+
+    always {
+        // Default all timer inputs to 0
+        timers.trigger = 9x{1b0};
+
+        // Fire the correct timer based on user_input
+        if (trigger && user_input > 0 && user_input <= 9) {
+            timers.trigger[user_input - 1] = 1b1;
+        }
+
+        // Collect all LED outputs and busy signals
+        leds = timers.led_out;
+        busy = |timers.busy; // OR reduction: busy if ANY timer is running
+    }
+}

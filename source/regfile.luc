@@ -1,0 +1,66 @@
+module regfile (
+    input clk,  // clock
+    input rst,  // reset
+    input wa[5], // write address
+    input we, // write enable
+    input data[32], // data in
+    
+    input ra1[5], // read address port 1
+    input ra2[5], // read address port 2
+    output rd1[32], // read data port 1
+    output rd2[32], // read data port 1
+
+    // Direct outputs
+    output seq_len[32],
+    output helper_index[32],
+    output score[32]
+) {
+    
+    .clk(clk), .rst(rst){
+        dff sequence_length_reg[32](#INIT(0))     //R0
+        dff helper_index_reg[32](#INIT(0))        //R1 (playback index / current index)
+        dff user_input_reg[32](#INIT(0))          //R2
+        dff seed_reg[32](#INIT(0))                //R3
+        dff score_reg[32](#INIT(0))               //R4
+    }
+    
+    always {
+        
+        //write port
+        if (we){
+            case(wa){
+                d0 : sequence_length_reg.d = data
+                d1 : helper_index_reg.d = data
+                d2 : user_input_reg.d = data
+                d3 : seed_reg.d = data
+                d4 : score_reg.d = data
+            }
+        }
+        
+        
+        //read port 1
+        case(ra1){
+            d0 : rd1 = sequence_length_reg.q
+            d1 : rd1 = helper_index_reg.q
+            d2 : rd1 = user_input_reg.q
+            d3 : rd1 = seed_reg.q
+            d4 : rd1 = score_reg.q
+            default : rd1 = 0
+        }
+        
+        //read port 2
+        case(ra2){
+            d0 : rd2 = sequence_length_reg.q
+            d1 : rd2 = helper_index_reg.q
+            d2 : rd2 = user_input_reg.q
+            d3 : rd2 = seed_reg.q
+            d4 : rd2 = score_reg.q
+            default : rd2 = 0
+        }
+
+        seq_len = sequence_length_reg.q
+        helper_index = helper_index_reg.q
+        score = score_reg.q
+ 
+    }
+}

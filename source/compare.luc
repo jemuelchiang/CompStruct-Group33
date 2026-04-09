@@ -1,18 +1,19 @@
 module compare (
     input z,
-    input v,
-    input n,
-    input alufn[6],
+    //input v,
+    //input n,
+    //input alufn[6],
     output cmp
 ) {
     
     always {
+        cmp = z
+        
+        //case(alufn[2:1]){
+        //    b01: cmp = z            // equal
+        //    b10: cmp = n ^ v        // less than
 
-        case(alufn[2:1]){
-            b01: cmp = z            // equal
-            b10: cmp = n ^ v        // less than
-
-            default: cmp = 0
-        }        
+        //    default: cmp = 0
+                
     }
 }
