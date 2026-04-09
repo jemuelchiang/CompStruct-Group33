@@ -73,18 +73,6 @@
             },
             {
                 "file": {
-                    "type": "Component",
-                    "path": "Miscellaneous/counter.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "DiskFile",
-                    "path": "source/alu_manual_tester.luc"
-                }
-            },
-            {
-                "file": {
                     "type": "DiskFile",
                     "path": "source/mux_2.luc"
                 }
@@ -112,13 +100,61 @@
                     "type": "DiskFile",
                     "path": "source/x_bit_left_shifter.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/regfile.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/fsm_control.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/datapath.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/led_timer.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/sequence_memory.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/led_controller.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/score_display.luc"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Miscellaneous/counter.luc"
+                }
             }
         ],
         "constraintFiles": [
             {
                 "file": {
-                    "type": "Component",
-                    "path": "Constraints/alchitry.acf"
+                    "type": "DiskFile",
+                    "path": "constraint/alchitry.acf"
                 }
             },
             {
