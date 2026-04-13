@@ -19,13 +19,14 @@ module fsm_control (
     // Control Outputs to ALU/RAM/Mux
     output alufn[6],       // ALU Opcode
     output mem_we,          // MEM Write Enable
-    output memsel,          // 
+    output memsel,
     output asel[2],
     output bsel[2],
-    output datasel[2],      // 0: ALU, 1: Entropy Counter, 2: Button Input
+    output datasel[2],
     
     // Signal from datapath
     input alu_cmp_result,
+    input score[32],
     
     // Game end signals
     output game_win,
@@ -64,6 +65,9 @@ module fsm_control (
     
     dff states[$width(States)](.clk(clk), .rst(rst), #INIT(States.IDLE))
     dff pause_ctr[27](.clk(clk), .rst(rst), #INIT(0))
+    dff speed[2](.clk(clk), .rst(rst), #INIT(0))
+    
+    const PAUSE_ROM = {27d25000000, 27d20000000, 27d16250000, 27d12500000}
     
     always {
         // Default Control Signal Outputs
@@ -87,6 +91,7 @@ module fsm_control (
         state_debug = 0
         
         states.d = states.q
+        speed.d = speed.q
         
         case (states.q) {
             States.IDLE: // Wait for start button to be pressed
@@ -157,7 +162,7 @@ module fsm_control (
             States.PLAYBACK_PAUSE: // Pause btw lights
                 state_debug = b111
                 pause_ctr.d = pause_ctr.q + 1
-                if (pause_ctr.q >= 27d25000000) {
+                if (pause_ctr.q >= PAUSE_ROM[speed.q]) {
                     states.d = States.INCR_PLAYBACK
                 }
                 
@@ -284,6 +289,9 @@ module fsm_control (
                 if (alu_cmp_result) {
                     states.d = States.WIN
                 } else {
+                    if (score == d5 || score == d10 || score == d15){
+                        speed.d = speed.q + 1
+                        }
                     states.d = States.STORE_CTR
                 }
                 
@@ -317,6 +325,9 @@ module fsm_control (
                 alufn = b011010
                 datasel = b0
                 we = 1
+                
+                speed.d = 0
+                
                 states.d = States.IDLE
         }
     }

@@ -155,6 +155,7 @@ module alchitry_top (
         fsm.user_input = user_input
         fsm.busy = led_controller.busy
         fsm.alu_cmp_result = datapath.alu_cmp_result
+        fsm.score = datapath.score
         
         //WIN
         if (fsm.game_win) {

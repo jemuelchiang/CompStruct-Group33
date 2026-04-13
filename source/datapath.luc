@@ -18,10 +18,8 @@ module datapath (
     input user_input[4],  // Conditioned button inputs
     
     output mem_led_out[4],   // To alchitry top
-    output score[32],        // To alchitry top
-    
-    // Signals to FSM
-    output alu_cmp_result
+    output score[32],        // To alchitry top & FSM
+    output alu_cmp_result    // To FSM
 
 ) {
     
