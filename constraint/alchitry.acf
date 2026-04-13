@@ -20,8 +20,8 @@ STANDARD(LVCMOS33), SIDE(TOP) {
     pin arcade_btn3 A33 PULL(DOWN)
     pin arcade_btn4 A36 PULL(DOWN)
     pin arcade_btn5 B36 PULL(DOWN)
-    pin arcade_btn6 B39 PULL(DOWN)
-    pin arcade_btn7 B42 PULL(DOWN)
+    pin arcade_btn6 B15 PULL(DOWN)
+    pin arcade_btn7 B12 PULL(DOWN)
     pin arcade_btn8 B45 PULL(DOWN)
     pin arcade_btn9 B48 PULL(DOWN)
     
