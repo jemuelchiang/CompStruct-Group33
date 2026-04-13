@@ -9,32 +9,32 @@ module led_timer #(
 ) {
 
     // Calculate how many cycles we need for however many seconds you need: *1 = 1 sec, *2 = 2sec
-    const DELAY_CYCLES = CLK_FREQ/2; 
+    const DELAY_CYCLES = CLK_FREQ; 
     
     .clk(clk), .rst(rst) {
         // 32 bit counter (around 40 secs of delay max)
-        dff counter[32]; 
-        dff is_on; 
+        dff counter[32]
+        dff is_on
     }
 
     always {
-        led_out = is_on.q;
-        busy = is_on.q;
+        led_out = is_on.q
+        busy = is_on.q
         
-        counter.d = counter.q;
+        counter.d = counter.q
 
         if (trigger && ~is_on.q) {
-            is_on.d = 1b1;      
-            counter.d = 0;
+            is_on.d = 1b1    
+            counter.d = 0
         }
 
         if (is_on.q) {
-            counter.d = counter.q + 1; 
+            counter.d = counter.q + 1
             
             // Check against our new 2-second constant
             if (counter.q == DELAY_CYCLES - 1) {
-                is_on.d = 1b0;      
-                counter.d = 28b0;   
+                is_on.d = 1b0
+                counter.d = 28b0
             }
         }
     }

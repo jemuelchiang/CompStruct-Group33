@@ -31,7 +31,7 @@ module random (
         result = ctr_in ^ right_shifter1.shr ^ t ^ right_shifter2.shr
         
         case (result[3:0]) {
-            h0: out = h9
+            h0: out = h1
                 
             h1: out = h1
             h2: out = h2
@@ -43,12 +43,12 @@ module random (
             h8: out = h8
             h9: out = h9
                 
-            hA: out = h8
-            hB: out = h7
+            hA: out = h2
+            hB: out = h3
             hC: out = h5
-            hD: out = h4
-            hE: out = h3
-            hF: out = h2
+            hD: out = h6
+            hE: out = h8
+            hF: out = h9
             default: out = 1
         }
     }

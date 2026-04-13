@@ -1,7 +1,8 @@
 module fsm_control (
     input clk,
     input rst,
-    input start_press,
+
+    input any_button,
     
     // led
     input user_input[4],
@@ -31,17 +32,19 @@ module fsm_control (
     output game_over,
     
     // Debug
-    output state_debug[8]
+    output state_debug[3]
     
 ) {
     enum States{
         IDLE,
+        START_PAUSE,
         STORE_CTR,
         GEN_AND_SAVE,
         INCR_SEQ_LENGTH,
         PLAYBACK_PREP,
         PLAYBACK,
         PLAYBACK_WAIT,
+        PLAYBACK_PAUSE,
         INCR_PLAYBACK,
         PLAYBACK_CHECK,
         INPUT_PREP,
@@ -50,14 +53,17 @@ module fsm_control (
         INPUT_CHECK,
         INCR_CURRENT,
         ROUND_CHECK,
+        ROUND_PAUSE,
         INCR_SCORE,
         SCORE_CHECK,
         WIN,
-        GAME_OVER
+        GAME_OVER,
+        RESET_SEQ_LENGTH,
+        RESET_SCORE
       }
     
     dff states[$width(States)](.clk(clk), .rst(rst), #INIT(States.IDLE))
-
+    dff pause_ctr[27](.clk(clk), .rst(rst), #INIT(0))
     
     always {
         // Default Control Signal Outputs
@@ -84,23 +90,27 @@ module fsm_control (
         
         case (states.q) {
             States.IDLE: // Wait for start button to be pressed
-                state_debug = 8h01
+                state_debug = b001
                 
-                if(start_press){
-                states.d = States.STORE_CTR
+                if(any_button){
+                    pause_ctr.d = 0
+                    states.d = States.STORE_CTR
+                }
+                
+            States.START_PAUSE:
+                state_debug = b111
+                pause_ctr.d = pause_ctr.q + 1
+                if (pause_ctr.q >= 27d25000000) {
+                    states.d = States.STORE_CTR
                 }
                 
             States.STORE_CTR: // Store entropy counter's value into R3
-                state_debug = 8h02
-                
                 we = 1
                 datasel = 1
                 wa = d3
                 states.d = States.GEN_AND_SAVE
                 
             States.GEN_AND_SAVE: // ALU generate random number, save into memory
-                state_debug = 8h03
-                
                 ra1 = d3
                 asel = b00
                 alufn = b000010
@@ -109,8 +119,6 @@ module fsm_control (
                 states.d = States.INCR_SEQ_LENGTH
             
             States.INCR_SEQ_LENGTH: // increment sequence length (R0) by 1
-                state_debug = 8h04
-                
                 ra1 = d0
                 asel = b00
                 bsel = b10
@@ -121,8 +129,6 @@ module fsm_control (
                 states.d = States.PLAYBACK_PREP
                 
             States.PLAYBACK_PREP: // Set helper index (R1) to 0
-                state_debug = 8h05
-                
                 asel = b10
                 wa = d1
                 alufn = b011010
@@ -131,7 +137,7 @@ module fsm_control (
                 states.d = States.PLAYBACK
                 
             States.PLAYBACK: // Light up 1 led from sequence memory
-                state_debug = 8h06
+                state_debug = b010
                 
                 trigger = 1
                 from_mem = 1
@@ -139,16 +145,25 @@ module fsm_control (
                 states.d = States.PLAYBACK_WAIT
 
             States.PLAYBACK_WAIT: // Wait for light to turn off
-                state_debug = 8h07
+                state_debug = b010
                 
                 from_mem = 1
                 memsel = 1
                 if (!busy) {
+                    pause_ctr.d = 0
+                    states.d = States.PLAYBACK_PAUSE
+                }
+                
+            States.PLAYBACK_PAUSE: // Pause btw lights
+                state_debug = b111
+                pause_ctr.d = pause_ctr.q + 1
+                if (pause_ctr.q >= 27d25000000) {
                     states.d = States.INCR_PLAYBACK
                 }
                 
+                
             States.INCR_PLAYBACK: // Increment helper index by 1
-                state_debug = 8h08
+                state_debug = b010
                 
                 ra1 = d1
                 asel = b00
@@ -160,7 +175,7 @@ module fsm_control (
                 states.d = States.PLAYBACK_CHECK
                 
             States.PLAYBACK_CHECK: // Check if helper index = sequence length
-                state_debug = 8h09
+                state_debug = b010
                 
                 ra1 = d1
                 asel = b00
@@ -175,8 +190,6 @@ module fsm_control (
                 }
                 
             States.INPUT_PREP: // Set helper index (R1) to 0
-                state_debug = 8h0A
-                
                 asel = b10
                 wa = d1
                 alufn = b011010
@@ -185,7 +198,7 @@ module fsm_control (
                 states.d = States.USER_INPUT
                 
             States.USER_INPUT: // Listen for button press, light up that led and store input
-                state_debug = 8h0B
+                state_debug = b011
                 
                 if (user_input != 0) {
                     trigger = 1            // light up led
@@ -201,14 +214,14 @@ module fsm_control (
                 }
                 
             States.BUSY_CHECK: // Wait for light to turn off
-                state_debug = 8h0C
+                state_debug = b011
                 
                 if (!busy) {
                     states.d = States.INPUT_CHECK
                 }
                 
             States.INPUT_CHECK: // Check if user input == memory value
-                state_debug = 8h0D
+                state_debug = b011
                 
                 ra1 = d2
                 asel = b00
@@ -222,8 +235,6 @@ module fsm_control (
                 }
                 
             States.INCR_CURRENT: // Increment helper index by 1
-                state_debug = 8h0E
-                
                 ra1 = d1
                 asel = b00
                 bsel = b10
@@ -234,8 +245,6 @@ module fsm_control (
                 states.d = States.ROUND_CHECK
                 
             States.ROUND_CHECK: // Check if helper index = sequence length
-                state_debug = 8h0F
-                
                 ra1 = d1
                 asel = b00
                 ra2 = d0
@@ -243,14 +252,20 @@ module fsm_control (
                 alufn = b110011
                 
                 if (alu_cmp_result) {
-                    states.d = States.INCR_SCORE
+                    pause_ctr.d = 0
+                    states.d = States.ROUND_PAUSE
                 } else {
                     states.d = States.USER_INPUT
                 }
                 
-            States.INCR_SCORE: // Increment player score
-                state_debug = 8h10
+            States.ROUND_PAUSE:
+                state_debug = b111
+                pause_ctr.d = pause_ctr.q + 1
+                if (pause_ctr.q >= 25000000) {
+                    states.d = States.INCR_SCORE
+                }
                 
+            States.INCR_SCORE: // Increment player score
                 ra1 = d4
                 asel = b00
                 bsel = b10
@@ -261,8 +276,6 @@ module fsm_control (
                 states.d = States.SCORE_CHECK
                 
             States.SCORE_CHECK: // Check if score == max score
-                state_debug = 8h11
-                
                 ra1 = d4
                 asel = b00
                 bsel = b11
@@ -275,14 +288,36 @@ module fsm_control (
                 }
                 
             States.WIN:
-                state_debug = 8h12
+                state_debug = b100
                 
                 game_win = 1
+                if(any_button){
+                    states.d = States.RESET_SEQ_LENGTH
+                }
                 
             States.GAME_OVER:
-                state_debug = 8h13
+                state_debug = b101
                 
                 game_over = 1
+                if(any_button){
+                    states.d = States.RESET_SEQ_LENGTH
+                }
+                
+            States.RESET_SEQ_LENGTH:
+                asel = b10
+                wa = d0
+                alufn = b011010
+                datasel = b0
+                we = 1
+                states.d = States.RESET_SCORE
+                
+            States.RESET_SCORE:
+                asel = b10
+                wa = d4
+                alufn = b011010
+                datasel = b0
+                we = 1
+                states.d = States.IDLE
         }
     }
 }

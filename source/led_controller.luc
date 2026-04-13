@@ -10,20 +10,20 @@ module led_controller #(
 ) {
 
     .clk(clk), .rst(rst), #CLK_FREQ(CLK_FREQ){
-        led_timer timers[9]; // 9 timer instances
+        led_timer timers[9] // 9 timer instances
     }
 
     always {
         // Default all timer inputs to 0
-        timers.trigger = 9x{1b0};
+        timers.trigger = 9x{1b0}
 
         // Fire the correct timer based on user_input
         if (trigger && user_input > 0 && user_input <= 9) {
-            timers.trigger[user_input - 1] = 1b1;
+            timers.trigger[user_input - 1] = 1b1
         }
 
         // Collect all LED outputs and busy signals
-        leds = timers.led_out;
-        busy = |timers.busy; // OR reduction: busy if ANY timer is running
+        leds = timers.led_out
+        busy = |timers.busy // OR reduction: busy if ANY timer is running
     }
 }

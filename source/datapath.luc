@@ -56,7 +56,7 @@ module datapath (
         case (bsel) {
             2b00: alu.b = regfile.rd2                 // From Regfile rd2
             2b01: alu.b = seq_mem.data_out            // From memory
-            2b10: alu.b = 32d1                        // Constant 1 (for incrementing) (difficulty?)
+            2b10: alu.b = 32d1                        // Constant 1 (for incrementing)
             2b11: alu.b = 32d20                       // Max score (20) (can change for testing purposes)
             default: alu.b = regfile.rd2
         }

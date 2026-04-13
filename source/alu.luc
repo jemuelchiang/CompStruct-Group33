@@ -7,14 +7,14 @@ module alu (
     output v,
     output n
 ) {
-    adder adder(#SIZE(32))
+    adder adder(#SIZE(6))
     random random
     compare compare
     
     always {
         // adder
-        adder.a = a
-        adder.b = b
+        adder.a = a[5:0]
+        adder.b = b[5:0]
         adder.alufn = alufn
         
         z = adder.z
@@ -28,7 +28,7 @@ module alu (
         compare.z = adder.z
         
         case(alufn){
-            b000000: out = adder.s        // ADD
+            b000000: out = c{26x{b0}, adder.s}        // ADD
             b000010: out = random.out     // Generate random number
             b011010: out = a              // 'A'
             b110011: out = compare.cmp    // CMP_EQ
