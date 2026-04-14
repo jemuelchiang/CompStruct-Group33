@@ -40,7 +40,7 @@ STANDARD(LVCMOS33), SIDE(TOP) {
     pin seg1[2] A17 // C1 
     pin seg1[3] A20 // D1 
     pin seg1[4] A23 // E1 
-    pin seg1[5] A24 // F1 
+    pin seg1[5] A28 // F1 
     pin seg1[6] A21 // G1 
     pin seg2[0] A9  // A2 - ones digit 
     pin seg2[1] A6  // B2 
