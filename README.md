@@ -7,7 +7,7 @@ In this single-player sequence memory game, players are given a 3x3 grid of butt
 *The physical machine is needed to play the game. To try the game in Alchitry Lab's simulator, visit the GridLock-Simulator branch!
 
 ### User Manual
-<img width="1414" height="2000" alt="GridLock_User_Manual" src="https://github.com/user-attachments/assets/d94c1bb9-0208-4aa6-9a11-3c9f43f68925" />
+<img width="1414" height="2000" alt="GridLock_User Manual" src="https://github.com/user-attachments/assets/aa589243-1bd9-447f-9827-60f5aa1ce514" />
 
 ### FSM Diagram
 <img width="12444" height="6418" alt="FSM Diagram" src="https://github.com/user-attachments/assets/6cda02b9-e766-4b48-b4cc-4f29573a880e" />
