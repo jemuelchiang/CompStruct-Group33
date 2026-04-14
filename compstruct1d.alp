@@ -142,12 +142,6 @@
                     "type": "DiskFile",
                     "path": "source/score_display.luc"
                 }
-            },
-            {
-                "file": {
-                    "type": "Component",
-                    "path": "Miscellaneous/counter.luc"
-                }
             }
         ],
         "constraintFiles": [
