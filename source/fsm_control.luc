@@ -64,10 +64,10 @@ module fsm_control (
       }
     
     dff states[$width(States)](.clk(clk), .rst(rst), #INIT(States.IDLE))
-    dff pause_ctr[27](.clk(clk), .rst(rst), #INIT(0))
+    dff pause_ctr[28](.clk(clk), .rst(rst), #INIT(0))
     dff speed[2](.clk(clk), .rst(rst), #INIT(0))
     
-    const PAUSE_ROM = {27d25000000, 27d20000000, 27d16250000, 27d12500000}
+    const PAUSE_ROM = $reverse({28d50000000, 28d25000000, 28d12500000, 28d05000000})
     
     always {
         // Default Control Signal Outputs
@@ -155,17 +155,8 @@ module fsm_control (
                 from_mem = 1
                 memsel = 1
                 if (!busy) {
-                    pause_ctr.d = 0
-                    states.d = States.PLAYBACK_PAUSE
-                }
-                
-            States.PLAYBACK_PAUSE: // Pause btw lights
-                state_debug = b111
-                pause_ctr.d = pause_ctr.q + 1
-                if (pause_ctr.q >= PAUSE_ROM[speed.q]) {
                     states.d = States.INCR_PLAYBACK
                 }
-                
                 
             States.INCR_PLAYBACK: // Increment helper index by 1
                 state_debug = b010
@@ -191,6 +182,14 @@ module fsm_control (
                 if (alu_cmp_result) {
                     states.d = States.INPUT_PREP
                 } else {
+                    pause_ctr.d = 0
+                    states.d = States.PLAYBACK_PAUSE
+                }
+                
+            States.PLAYBACK_PAUSE: // Pause btw lights
+                state_debug = b111
+                pause_ctr.d = pause_ctr.q + 1
+                if (pause_ctr.q >= PAUSE_ROM[speed.q]) {
                     states.d = States.PLAYBACK
                 }
                 
@@ -266,7 +265,7 @@ module fsm_control (
             States.ROUND_PAUSE:
                 state_debug = b111
                 pause_ctr.d = pause_ctr.q + 1
-                if (pause_ctr.q >= 25000000) {
+                if (pause_ctr.q >= 27d25000000) {
                     states.d = States.INCR_SCORE
                 }
                 

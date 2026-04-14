@@ -98,7 +98,7 @@ module alchitry_top (
         // 7 seg score display
         seg1 = score_display.seg1
         seg2 = score_display.seg2
-    
+     
         // Encode button input
         user_input = 4b0000
         if (btn_edge_1.out) user_input = 4b0001

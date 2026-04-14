@@ -12,40 +12,60 @@ module score_display (
     always {
         tens  = 0
         ones  = score
+        
+        case (ones) {
+            d0: tens = 0; ones = 0;
+            d1: tens = 0; ones = 1;
+            d2: tens = 0; ones = 2;
+            d3: tens = 0; ones = 3;
+            d4: tens = 0; ones = 4;
+            d5: tens = 0; ones = 5;
+            d6: tens = 0; ones = 6;
+            d7: tens = 0; ones = 7;
+            d8: tens = 0; ones = 8;
+            d9: tens = 0; ones = 9;
+            d10: tens = 1; ones = 0;
+            d11: tens = 1; ones = 1;
+            d12: tens = 1; ones = 2;
+            d13: tens = 1; ones = 3;
+            d14: tens = 1; ones = 4;
+            d15: tens = 1; ones = 5;
+            d16: tens = 1; ones = 6;
+            d17: tens = 1; ones = 7;
+            d18: tens = 1; ones = 8;
+            d19: tens = 1; ones = 9;
+            d20: tens = 2; ones = 0;
+        }
 
-        if (ones >= 20) { tens = 2; ones = ones - 20; }
-        else if (ones >= 10) { tens = 1; ones = ones - 10; }
-
-        case (ones[3:0]) {
-            4d0:  ones_segs = 7b0111111
-            4d1:  ones_segs = 7b0000110
-            4d2:  ones_segs = 7b1011011
-            4d3:  ones_segs = 7b1001111
-            4d4:  ones_segs = 7b1100110
-            4d5:  ones_segs = 7b1101101
-            4d6:  ones_segs = 7b1111101
-            4d7:  ones_segs = 7b0000111
-            4d8:  ones_segs = 7b1111111
-            4d9:  ones_segs = 7b1101111
+        case (ones) {
+            d0:  ones_segs = 7b0111111
+            d1:  ones_segs = 7b0000110
+            d2:  ones_segs = 7b1011011
+            d3:  ones_segs = 7b1001111
+            d4:  ones_segs = 7b1100110
+            d5:  ones_segs = 7b1101101
+            d6:  ones_segs = 7b1111101
+            d7:  ones_segs = 7b0000111
+            d8:  ones_segs = 7b1111111
+            d9:  ones_segs = 7b1101111
             default: ones_segs = 7b0000000
         }
         
-        case (tens[3:0]) {
-            4d0:  tens_segs = 7b0111111
-            4d1:  tens_segs = 7b0000110
-            4d2:  tens_segs = 7b1011011
-            4d3:  tens_segs = 7b1001111
-            4d4:  tens_segs = 7b1100110
-            4d5:  tens_segs = 7b1101101
-            4d6:  tens_segs = 7b1111101
-            4d7:  tens_segs = 7b0000111
-            4d8:  tens_segs = 7b1111111
-            4d9:  tens_segs = 7b1101111
+        case (tens) {
+            d0:  tens_segs = 7b0111111
+            d1:  tens_segs = 7b0000110
+            d2:  tens_segs = 7b1011011
+            d3:  tens_segs = 7b1001111
+            d4:  tens_segs = 7b1100110
+            d5:  tens_segs = 7b1101101
+            d6:  tens_segs = 7b1111101
+            d7:  tens_segs = 7b0000111
+            d8:  tens_segs = 7b1111111
+            d9:  tens_segs = 7b1101111
             default: tens_segs = 7b0000000
         }
 
         seg1 = tens_segs
         seg2 = ones_segs
-        
     }
 }
