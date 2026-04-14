@@ -4,10 +4,18 @@
 GridLock is a 3 by 3 grid memory game using Finite State Machine and Arithmetic Logic Unit, in Alchitry V2. <br><br>
 In this single-player sequence memory game, players are given a 3x3 grid of buttons that challenges their pattern recognition and memory. Upon pressing any button, a single button lights up to start the sequence. After the player successfully mimics the sequence, the player gains 1 point and the system repeats the original sequence and appends a new input at the end. The winning condition is to successfully reach a score of 20 by memorizing 20 inputs. There is no room for error; one wrong press will end the game, and the player will have to start all over. <br><br>
 
-*The physical machine is needed to play the game. To try the game in Alchitry Lab's simulator, visit the GridLock-Simulator branch!
-
 ### User Manual
-<img width="1414" height="2000" alt="GridLock_User_Manual" src="https://github.com/user-attachments/assets/d94c1bb9-0208-4aa6-9a11-3c9f43f68925" />
+- To "press" a button, flip io_led up. Flipping it up sends a high signal, flipping it back down does not do anything.
+<br><br>
+1. In IDLE (state debug 001), press any button to start
+2. Sequence will be shown (state debug 010)
+3. Mimic and input the shown sequence (state debug 011)
+4. Every round, a random button input will be added at the end of the previous sequence
+5. As the game progresses, the speed of which the sequence is being shown at will increase
+6. Try to reach the max score of 20!
+7. At Win or Lose, press any button to go back to IDLE
+
+![Sim_User_Manual](https://github.com/user-attachments/assets/a2936057-2625-4e9a-9f88-68a0c3667a12)
 
 ### FSM Diagram
 <img width="12444" height="6418" alt="FSM Diagram" src="https://github.com/user-attachments/assets/6cda02b9-e766-4b48-b4cc-4f29573a880e" />
