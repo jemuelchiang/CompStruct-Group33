@@ -4,6 +4,8 @@
 GridLock is a 3 by 3 grid memory game using Finite State Machine and Arithmetic Logic Unit, in Alchitry V2. <br><br>
 In this single-player sequence memory game, players are given a 3x3 grid of buttons that challenges their pattern recognition and memory. Upon pressing any button, a single button lights up to start the sequence. After the player successfully mimics the sequence, the player gains 1 point and the system repeats the original sequence and appends a new input at the end. The winning condition is to successfully reach a score of 20 by memorizing 20 inputs. There is no room for error; one wrong press will end the game, and the player will have to start all over. <br><br>
 
+*Add necessary components in Alchitry
+
 ### User Manual
 - To "press" a button, flip io_led up. Flipping it up sends a high signal, flipping it back down does not do anything.
 <br><br>
