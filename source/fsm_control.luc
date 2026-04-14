@@ -64,10 +64,10 @@ module fsm_control (
       }
     
     dff states[$width(States)](.clk(clk), .rst(rst), #INIT(States.IDLE))
-    dff pause_ctr[28](.clk(clk), .rst(rst), #INIT(0))
+    dff pause_ctr[9](.clk(clk), .rst(rst), #INIT(0))
     dff speed[2](.clk(clk), .rst(rst), #INIT(0))
     
-    const PAUSE_ROM = $reverse({28d50000000, 28d25000000, 28d12500000, 28d05000000})
+    const PAUSE_ROM = $reverse({9d500, 9d250, 9d125, 9d50})
     
     always {
         // Default Control Signal Outputs
@@ -105,7 +105,7 @@ module fsm_control (
             States.START_PAUSE:
                 state_debug = b111
                 pause_ctr.d = pause_ctr.q + 1
-                if (pause_ctr.q >= 27d25000000) {
+                if (pause_ctr.q >= 9d250) {
                     states.d = States.STORE_CTR
                 }
                 
@@ -265,7 +265,7 @@ module fsm_control (
             States.ROUND_PAUSE:
                 state_debug = b111
                 pause_ctr.d = pause_ctr.q + 1
-                if (pause_ctr.q >= 27d25000000) {
+                if (pause_ctr.q >= 9d250) {
                     states.d = States.INCR_SCORE
                 }
                 

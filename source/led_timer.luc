@@ -9,7 +9,7 @@ module led_timer #(
 ) {
 
     // Calculate how many cycles we need for however many seconds you need: *1 = 1 sec, *2 = 2sec
-    const DELAY_CYCLES = CLK_FREQ / 2; 
+    const DELAY_CYCLES = CLK_FREQ/2;
     
     .clk(clk), .rst(rst) {
         // 32 bit counter (around 40 secs of delay max)

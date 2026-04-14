@@ -142,6 +142,12 @@
                     "type": "DiskFile",
                     "path": "source/score_display.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Miscellaneous/counter.luc"
+                }
             }
         ],
         "constraintFiles": [
@@ -149,6 +155,12 @@
                 "file": {
                     "type": "DiskFile",
                     "path": "constraint/alchitry.acf"
+                }
+            },
+            {
+                "file": {
+                    "type": "Component",
+                    "path": "Constraints/io_v1_pulldown.acf"
                 }
             }
         ],

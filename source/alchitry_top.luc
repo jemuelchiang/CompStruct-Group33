@@ -4,7 +4,12 @@ module alchitry_top (
     output led[8],          // 8 user controllable LEDs
     input usb_rx,            // USB->Serial input
     output usb_tx,           // USB->Serial output
-    
+    output io_led[3][8],
+    input io_dip[3][8],
+    input io_button[5],
+    output io_select[4],
+    output io_segment[8]
+    /*
     // Arcade Buttons
     input arcade_btn1,
     input arcade_btn2,
@@ -29,7 +34,7 @@ module alchitry_top (
     
 // 2 Digit 7 Segment
     output seg1[7],
-    output seg2[7]
+    output seg2[7]*/
 ) {
     
     sig rst                 // reset signal
@@ -43,15 +48,15 @@ module alchitry_top (
     const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100000000 otherwise in hardware
     
     .clk(clk), #CLK_FREQ(CLK_FREQ) {
-        button_conditioner btn_cond_1(.in(arcade_btn1))
-        button_conditioner btn_cond_2(.in(arcade_btn2))
-        button_conditioner btn_cond_3(.in(arcade_btn3))
-        button_conditioner btn_cond_4(.in(arcade_btn4))
-        button_conditioner btn_cond_5(.in(arcade_btn5))
-        button_conditioner btn_cond_6(.in(arcade_btn6))
-        button_conditioner btn_cond_7(.in(arcade_btn7))
-        button_conditioner btn_cond_8(.in(arcade_btn8))
-        button_conditioner btn_cond_9(.in(arcade_btn9))
+        button_conditioner btn_cond_1(.in(io_dip[0][0]))
+        button_conditioner btn_cond_2(.in(io_dip[0][1]))
+        button_conditioner btn_cond_3(.in(io_dip[0][2]))
+        button_conditioner btn_cond_4(.in(io_dip[0][3]))
+        button_conditioner btn_cond_5(.in(io_dip[0][4]))
+        button_conditioner btn_cond_6(.in(io_dip[0][5]))
+        button_conditioner btn_cond_7(.in(io_dip[0][6]))
+        button_conditioner btn_cond_8(.in(io_dip[0][7]))
+        button_conditioner btn_cond_9(.in(io_dip[1][0]))
     }
     
     .clk(clk), #RISE(1), #FALL(0) {
@@ -73,8 +78,9 @@ module alchitry_top (
         datapath datapath
         led_controller led_controller(#CLK_FREQ(CLK_FREQ))
         fsm_control fsm(.any_button(any_button))
+        score_display_test score_display(#CLK_FREQ(CLK_FREQ), .score(datapath.score[5:0]))
     }
-    score_display score_display(.score(datapath.score[4:0]))
+    
     
     always {
         
@@ -84,7 +90,12 @@ module alchitry_top (
         usb_tx = usb_rx          // loop serial port
         
         led = 0
+        io_select = score_display.io_select
+        io_segment = score_display.io_segment
+        io_led = 3x{{h00}}
         
+
+        /*
         transistor1 = 0
         transistor2 = 0
         transistor3 = 0
@@ -98,7 +109,8 @@ module alchitry_top (
         // 7 seg score display
         seg1 = score_display.seg1
         seg2 = score_display.seg2
-     
+        */
+        
         // Encode button input
         user_input = 4b0000
         if (btn_edge_1.out) user_input = 4b0001
@@ -140,42 +152,44 @@ module alchitry_top (
         led_controller.trigger = fsm.trigger
         
         // Arcade button leds
-        transistor1 = led_controller.leds[0]
-        transistor2 = led_controller.leds[1]
-        transistor3 = led_controller.leds[2]
-        transistor4 = led_controller.leds[3]
-        transistor5 = led_controller.leds[4]
-        transistor6 = led_controller.leds[5]
-        transistor7 = led_controller.leds[6]
-        transistor8 = led_controller.leds[7]
-        transistor9 = led_controller.leds[8]
+        io_led[0][0] = led_controller.leds[0]
+        io_led[0][1] = led_controller.leds[1]
+        io_led[0][2] = led_controller.leds[2]
+        io_led[0][3] = led_controller.leds[3]
+        io_led[0][4] = led_controller.leds[4]
+        io_led[0][5] = led_controller.leds[5]
+        io_led[0][6] = led_controller.leds[6]
+        io_led[0][7] = led_controller.leds[7]
+        io_led[1][0] = led_controller.leds[8]
         
         
         // fsm_control connections
         fsm.user_input = user_input
         fsm.busy = led_controller.busy
         fsm.alu_cmp_result = datapath.alu_cmp_result
-        fsm.score = datapath.score
+        fsm.score  = datapath.score
         
         //WIN
         if (fsm.game_win) {
-            transistor1 = 1
+            /*transistor1 = 1
             transistor2 = 1
             transistor3 = 1
             transistor4 = 1
             transistor6 = 1
             transistor7 = 1
             transistor8 = 1
-            transistor9 = 1
+            transistor9 = 1*/
+            io_led[2] = hFF
         }
         
         // GAME OVER
         if (fsm.game_over) {
-            transistor1 = 1
+            /*transistor1 = 1
             transistor3 = 1
             transistor5 = 1
             transistor7 = 1
-            transistor9 = 1
+            transistor9 = 1*/
+            io_led[2] = hAA
         }
         
         //Debug
